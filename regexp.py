@@ -121,8 +121,10 @@ class RegexParser:
         base = self.base()
         if self.peek() == '*':
             self.eat("*")
-            base = Kleene(base)
-        # TODO: support + repetition
+            return Kleene(base)
+        if self.peek() == '+':
+            self.eat("+")
+            return Sequence(base, Kleene(base))
         return base
 
     def base(self):

@@ -44,6 +44,15 @@ class RegexpParserTestCase(unittest.TestCase):
             Kleene(Char("f")),
         ))
 
+    def test_nonzero_repeat(self):
+        r = self.parse("""(b|c)+\d*\++""")
+        self.assertEqual(r, Sequence(
+            Sequence(Choice(Char("b"), Char("c")),
+                     Kleene(Choice(Char("b"), Char("c")))),
+            Kleene(Char("d")),
+            Sequence(Char("+"), Kleene(Char("+"))),
+        ))
+
 
 if __name__ == '__main__':
     unittest.main()

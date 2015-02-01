@@ -8,6 +8,10 @@ def parse(s):
     return RegexParser(s).regex()
 
 
+def match(re, s):
+    return parse(re).match(s)
+
+
 class RegexpParserTestCase(unittest.TestCase):
     def test_input_stream(self):
         p = RegexParser("foo")
@@ -85,6 +89,58 @@ class RegexMatchesEmptyTestCase(unittest.TestCase):
         self.assertTrue(r.matches_empty())
         r = Sequence()
         self.assertTrue(r.matches_empty())
+
+
+class RegexMatchingTestCase(unittest.TestCase):
+    def test_derivative(self):
+        self.assertEqual(parse("abc").derivative("a").simplify(), parse("bc"))
+        self.assertEqual(parse("a").derivative("c"), Null())
+        self.assertEqual(parse("a").derivative("a"), Empty())
+        self.assertEqual(Empty().derivative("c"), Null())
+        self.assertEqual(Null().derivative("c"), Null())
+
+    def test_simple_strings(self):
+        self.assertTrue(match("abc", "abc"))
+        self.assertFalse(match("abc", "ab"))
+        self.assertFalse(match("ab", "abc"))
+
+    def test_choice(self):
+        re = "(ab|c)(d|ef)(g|h+)"
+        # matching cases
+        self.assertTrue(match(re, "abdg"))
+        self.assertTrue(match(re, "abefg"))
+        self.assertTrue(match(re, "abefhhhh"))
+        self.assertTrue(match(re, "abdg"))
+        # non-matching cases
+        self.assertFalse(match(re, "abdefg"))  # both from 2nd group
+        self.assertFalse(match(re, "abef"))  # missing last group
+        self.assertFalse(match(re, "aefg"))  # missing b from "ab"
+        self.assertFalse(match(re, ""))
+
+    def test_repeat(self):
+        re = "(ab)*(ce)*"
+        # matching cases
+        self.assertTrue(match(re, "ababce"))
+        self.assertTrue(match(re, "abababcececece"))
+        self.assertTrue(match(re, "abab"))
+        self.assertTrue(match(re, "ab"))
+        self.assertTrue(match(re, "cece"))
+        self.assertTrue(match(re, "ce"))
+        self.assertTrue(match(re, ""))
+        # non-matching cases
+        self.assertFalse(match(re, "ababc"))
+        self.assertFalse(match(re, "c"))
+        self.assertFalse(match(re, "abace"))
+
+    def test_empty(self):
+        self.assertTrue(Empty().match(""))
+        self.assertFalse(Empty().match("a"))
+        self.assertFalse(Empty().match("abc"))
+
+    def test_null(self):
+        self.assertFalse(Null().match(""))
+        self.assertFalse(Null().match("a"))
+        self.assertFalse(Null().match("abc"))
 
 
 if __name__ == '__main__':

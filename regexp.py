@@ -8,11 +8,22 @@ class Regex:
         else:
             return False
 
+    def matches_empty(self):
+        return True
+
 
 class Choice(Regex):
+    """ Match either of two regexes. """
     def __init__(self, left, right):
+        """
+        :type left: Regex
+        :type right: Regex
+        """
         self.left = left
         self.right = right
+
+    def matches_empty(self):
+        return self.left.matches_empty() or self.right.matches_empty()
 
     def __str__(self):
         return str(self.left) + "|" + str(self.right)
@@ -23,8 +34,7 @@ class Choice(Regex):
 
 
 class Empty(Regex):
-    pass
-
+    """ Match only the empty string. """
     def __str__(self):
         return ""
 
@@ -33,8 +43,12 @@ class Empty(Regex):
 
 
 class Sequence(Regex):
+    """ A possibly empty sequence of regexes. """
     def __init__(self, *elements):
         self.elements = list(elements)
+
+    def matches_empty(self):
+        return all([re.matches_empty() for re in self.elements])
 
     def add(self, el):
         self.elements.append(el)
@@ -55,7 +69,8 @@ class Sequence(Regex):
         )
 
 
-class Kleene(Regex):
+class Repeat(Regex):
+    """ Zero or more repetitions of a regex (Kleene star operator). """
     def __init__(self, regex):
         self.regex = regex
 
@@ -67,8 +82,12 @@ class Kleene(Regex):
 
 
 class Char(Regex):
+    """ Match a single character. """
     def __init__(self, char):
         self.char = char
+
+    def matches_empty(self):
+        return False
 
     def __str__(self):
         return self.char
@@ -78,6 +97,19 @@ class Char(Regex):
         if inner in ["(", ")"]:
             inner = "\\" + inner
         return "Char({})".format(inner)
+
+
+class Null(Regex):
+    """ Match nothing. """
+    def matches_empty(self):
+        return False
+
+    def __str__(self):
+        # There's really no regex syntax to express this idea.
+        return "#null#"
+
+    def __repr__(self):
+        return "Null()"
 
 
 class RegexParser:
@@ -121,10 +153,10 @@ class RegexParser:
         base = self.base()
         if self.peek() == '*':
             self.eat("*")
-            return Kleene(base)
+            return Repeat(base)
         if self.peek() == '+':
             self.eat("+")
-            return Sequence(base, Kleene(base))
+            return Sequence(base, Repeat(base))
         return base
 
     def base(self):

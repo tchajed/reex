@@ -36,6 +36,54 @@ class Regex:
         return regex.matches_empty()
 
 
+class Empty(Regex):
+    """ Match only the empty string. """
+
+    def __str__(self):
+        return ""
+
+    def __repr__(self):
+        return "Empty()"
+
+
+class Null(Regex):
+    """ Match nothing. """
+
+    def matches_empty(self):
+        return False
+
+    def __str__(self):
+        # There's really no regex syntax to express this idea.
+        return "#null#"
+
+    def __repr__(self):
+        return "Null()"
+
+
+class Char(Regex):
+    """ Match a single character. """
+
+    def __init__(self, char):
+        self.char = char
+
+    def matches_empty(self):
+        return False
+
+    def derivative(self, c):
+        if self.char == c:
+            return Empty()
+        return Null()
+
+    def __str__(self):
+        return self.char
+
+    def __repr__(self):
+        inner = self.char
+        if inner in ["(", ")"]:
+            inner = "\\" + inner
+        return "Char({})".format(inner)
+
+
 class Choice(Regex):
     """ Match either of two regexes. """
 
@@ -60,16 +108,6 @@ class Choice(Regex):
     def __repr__(self):
         return "Choice({}, {})".format(repr(self.left),
                                        repr(self.right))
-
-
-class Empty(Regex):
-    """ Match only the empty string. """
-
-    def __str__(self):
-        return ""
-
-    def __repr__(self):
-        return "Empty()"
 
 
 class Sequence(Regex):
@@ -142,44 +180,6 @@ class Repeat(Regex):
         return "(" + inner + ")*"
 
 
-class Char(Regex):
-    """ Match a single character. """
-
-    def __init__(self, char):
-        self.char = char
-
-    def matches_empty(self):
-        return False
-
-    def derivative(self, c):
-        if self.char == c:
-            return Empty()
-        return Null()
-
-    def __str__(self):
-        return self.char
-
-    def __repr__(self):
-        inner = self.char
-        if inner in ["(", ")"]:
-            inner = "\\" + inner
-        return "Char({})".format(inner)
-
-
-class Null(Regex):
-    """ Match nothing. """
-
-    def matches_empty(self):
-        return False
-
-    def __str__(self):
-        # There's really no regex syntax to express this idea.
-        return "#null#"
-
-    def __repr__(self):
-        return "Null()"
-
-
 class RegexParser:
     def __init__(self, text):
         self.text = text
@@ -212,7 +212,7 @@ class RegexParser:
     def term(self):
         factors = Sequence()
         while (self.peek() is not None and
-               self.peek() != ')' and self.peek() != '|'):
+                       self.peek() != ')' and self.peek() != '|'):
             factor = self.factor()
             factors.add(factor)
         return factors.simplify()

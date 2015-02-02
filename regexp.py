@@ -289,3 +289,14 @@ class RegexParser:
             self.eat(")")
             return regex
         return Char(self.next())
+
+
+def parse(re):
+    """
+    Parse a string into a Regex.
+
+    :param re: a string with a regular expression
+    :return: the parsed Regex
+    :rtype: Regex
+    """
+    return RegexParser(re).regex()

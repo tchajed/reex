@@ -4,10 +4,6 @@ import unittest
 from regexp import *
 
 
-def parse(s):
-    return RegexParser(s).regex()
-
-
 def match(re, s):
     return parse(re).match(s)
 

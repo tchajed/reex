@@ -119,12 +119,20 @@ class Sequence(Regex):
         """
         self.elements = list(elements)
 
+    def head(self):
+        if not self.elements:
+            return Empty()
+        return self.elements[0]
+
+    def tail(self):
+        if not self.elements or len(self.elements) == 1:
+            return Empty()
+        return Sequence(*self.elements[1:]).simplify()
+
     def derivative(self, c):
-        if len(self.elements) < 2:
-            return self.simplify().derivative(c)
-        head = self.elements[0]
-        tail = Sequence(*self.elements[1:])
-        head_derivative = Sequence(head.derivative(c), tail)
+        head = self.head()
+        tail = self.tail()
+        head_derivative = Sequence(head.derivative(c), tail).simplify()
         if head.matches_empty():
             return Choice(tail.derivative(c),  # match head against empty
                           head_derivative)

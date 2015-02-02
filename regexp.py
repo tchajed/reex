@@ -151,16 +151,20 @@ class Sequence(Regex):
 
         :rtype: Regex
         """
-        if len(self.elements) == 0:
+        elements = []
+        for el in self.elements:
+            if isinstance(el, Null):
+                return Null()
+            if isinstance(el, Empty):
+                continue
+            if isinstance(el, Sequence):
+                elements.extend(el.elements)
+            else:
+                elements.append(el)
+        if not len(elements):
             return Empty()
-        if len(self.elements) == 1:
-            return self.elements[0]
-        elements = [el for el in self.elements if not isinstance(el, Empty)]
-        if all([isinstance(el, Sequence) for el in elements]):
-            grouped_elements = []
-            for el in elements:
-                grouped_elements.extend(el.elements)
-            elements = grouped_elements
+        if len(elements) == 1:
+            return elements[0]
         return Sequence(*elements)
 
     def __str__(self):

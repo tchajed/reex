@@ -52,10 +52,9 @@ class RegexpParserTestCase(unittest.TestCase):
     def test_nonzero_repeat(self):
         r = parse("""(b|c)+\d*\++""")
         self.assertEqual(r, Sequence(
-            Sequence(Choice(Char("b"), Char("c")),
-                     Repeat(Choice(Char("b"), Char("c")))),
+            Choice(Char("b"), Char("c")), Repeat(Choice(Char("b"), Char("c"))),
             Repeat(Char("d")),
-            Sequence(Char("+"), Repeat(Char("+"))),
+            Char("+"), Repeat(Char("+")),
         ))
 
 

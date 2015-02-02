@@ -155,6 +155,41 @@ class RegexGenerationTestCase(unittest.TestCase):
             with self.subTest(re=reStr):
                 self.assertSetEqual(re.next_chars(), expected)
 
+    def random_match(self, re, **kwargs):
+        """ Helper that calls random_match and verifies the re matches the resulting string.
+
+        """
+        s = re.random_match(**kwargs)
+        self.assertTrue(re.match(s))
+        return s
+
+    def test_random_match(self):
+        cases = [
+            "(ab)*(ce)*",
+            "(a|b)+cd(a|b)+",
+            "(a*bcd(123)+)|(hij*abc)+",
+            "a|(b*)",
+        ]
+        ITERS = 20
+        for reStr in cases:
+            re = parse(reStr)
+            with self.subTest(re=reStr):
+                with self.subTest(stop_method="stop_p"):
+                    for _ in range(ITERS):
+                        self.random_match(re, stop_p=0.10, length=None)
+                with self.subTest(stop_method="length=0"):
+                    s = self.random_match(re, stop_p=0.0, length=0)
+                    if re.matches_empty():
+                        self.assertEqual(s, "")
+                with self.subTest(stop_method="length"):
+                    for _ in range(ITERS):
+                        self.random_match(re, stop_p=0.0, length=5)
+                        self.random_match(re, stop_p=0.0, length=10)
+                with self.subTest(stop_method="stop_p+length"):
+                    for _ in range(ITERS):
+                        self.random_match(re, stop_p=0.10, length=5)
+                        self.random_match(re, stop_p=0.10, length=10)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,7 @@
 __author__ = 'tchajed'
 
+import random
+
 
 class Regex:
     def __eq__(self, other):
@@ -42,6 +44,21 @@ class Regex:
         :rtype: set[str]
         """
         return set([])
+
+    def random_match(self, stop_p=0.10, length=None):
+        if self.matches_empty():
+            # decide whether to stop
+            if length == 0:
+                return ""
+            if random.random() < stop_p:
+                return ""
+        choices = self.next_chars()
+        if not choices:
+            return ""
+        next = random.choice(list(choices))
+        if length is not None and length > 0:
+            length -= 1
+        return next + self.derivative(next).random_match(stop_p=stop_p, length=length)
 
 
 class Empty(Regex):

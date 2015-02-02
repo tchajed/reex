@@ -35,6 +35,14 @@ class Regex:
             regex = regex.derivative(ch)
         return regex.matches_empty()
 
+    def next_chars(self):
+        """
+        Return the set of characters the regex could match against next.
+
+        :rtype: set[str]
+        """
+        return set([])
+
 
 class Empty(Regex):
     """ Match only the empty string. """
@@ -74,6 +82,9 @@ class Char(Regex):
             return Empty()
         return Null()
 
+    def next_chars(self):
+        return {self.char}
+
     def __str__(self):
         return self.char
 
@@ -101,6 +112,9 @@ class Choice(Regex):
     def derivative(self, c):
         return Choice(self.left.derivative(c),
                       self.right.derivative(c))
+
+    def next_chars(self):
+        return self.left.next_chars() | self.right.next_chars()
 
     def __str__(self):
         return str(self.left) + "|" + str(self.right)
@@ -137,6 +151,12 @@ class Sequence(Regex):
             return Choice(tail.derivative(c),  # match head against empty
                           head_derivative)
         return head_derivative
+
+    def next_chars(self):
+        head = self.head()
+        if head.matches_empty():
+            return head.next_chars() | self.tail().next_chars()
+        return head.next_chars()
 
     def matches_empty(self):
         return all([re.matches_empty() for re in self.elements])
@@ -184,6 +204,9 @@ class Repeat(Regex):
 
     def derivative(self, c):
         return Sequence(self.regex.derivative(c), Repeat(self.regex))
+
+    def next_chars(self):
+        return self.regex.next_chars()
 
     def __str__(self):
         inner = str(self.regex)

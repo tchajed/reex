@@ -142,5 +142,19 @@ class RegexMatchingTestCase(unittest.TestCase):
         self.assertFalse(Null().match("abc"))
 
 
+class RegexGenerationTestCase(unittest.TestCase):
+    def test_next_chars(self):
+        cases = [
+            ("(ab)*(ce)*", set("ac")),
+            ("abc", set("a")),
+            ("(ab|c*)|(d+)", set("acd")),
+            ("(a|b|c|d|(ef))+h", set("abcde")),
+        ]
+        for reStr, expected in cases:
+            re = parse(reStr)
+            with self.subTest(re=reStr):
+                self.assertSetEqual(re.next_chars(), expected)
+
+
 if __name__ == '__main__':
     unittest.main()

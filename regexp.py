@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+
 __author__ = 'tchajed'
 
 import random
@@ -300,3 +304,19 @@ def parse(re):
     :rtype: Regex
     """
     return RegexParser(re).regex()
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("regex",
+            help="regex to generate examples for")
+    parser.add_argument("-n", "--num",
+            type=int,
+            default=1,
+            help="number of examples to generate")
+    args = parser.parse_args()
+
+    r = parse(args.regex)
+    for i in range(args.num):
+        print(r.random_match())
